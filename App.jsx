@@ -1,42 +1,7 @@
 /*
 PI Planning PWA — Single-file React App (App.jsx)
 
-How to use:
-1) Create a Vite React app (recommended) or use Create React App.
-   npx create-vite@latest pi-planning --template react
-   cd pi-planning
-2) Install Tailwind (optional) or use the included CSS variables.
-3) Replace src/App.jsx with this file. Ensure Tailwind is configured if you keep Tailwind classes.
-4) Add a simple manifest.json and service-worker to enable PWA features (example below in comments).
-
-This single-file app includes:
-- Home screen
-- Rooms list
-- Teams list
-- Map view (interactive SVG) with tappable pins
-- Room detail modal / page
-- Simple client-side data store (data embedded, can be replaced with fetch to /api/data.json)
-- "Add to home screen" friendly meta
-
-Notes: The UI uses Tailwind utility classes. If you don't want Tailwind, replace className with your own CSS.
-
-PWA manifest example (public/manifest.json):
-{
-  "name": "PI Planning Rooms",
-  "short_name": "PI Rooms",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1e40af",
-  "icons": [
-    {"src":"/icons/icon-192.png","sizes":"192x192","type":"image/png"},
-    {"src":"/icons/icon-512.png","sizes":"512x512","type":"image/png"}
-  ]
-}
-
-Service Worker (basic) hint: use Workbox or simple service worker to cache / offline.
-
-Now the React code starts below:
+Safe / defensive variant to avoid common runtime errors that cause a white screen.
 */
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -58,8 +23,15 @@ const SAMPLE_DATA = {
 };
 
 function useWindowSize() {
-  const [size, setSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+  // Defensive: don't assume `window` exists (avoids crashes during SSR or unusual test envs)
+  const defaultSize = { width: 1024, height: 768 };
+  const initial = (typeof window !== 'undefined' && window.innerWidth && window.innerHeight)
+    ? { width: window.innerWidth, height: window.innerHeight }
+    : defaultSize;
+
+  const [size, setSize] = useState(initial);
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const onResize = () => setSize({ width: window.innerWidth, height: window.innerHeight });
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
@@ -79,8 +51,20 @@ export default function App() {
     // fetch('/data.json').then(r=>r.json()).then(setData)
   }, []);
 
-  const rooms = useMemo(() => data.rooms.filter(r => r.name.toLowerCase().includes(query.toLowerCase()) || (r.location || '').toLowerCase().includes(query.toLowerCase())), [data.rooms, query]);
-  const teams = useMemo(() => data.teams.filter(t => t.name.toLowerCase().includes(query.toLowerCase())), [data.teams, query]);
+  // defensive guards: ensure arrays exist before calling array methods
+  const roomsData = data?.rooms || [];
+  const teamsData = data?.teams || [];
+
+  const rooms = useMemo(() =>
+    roomsData.filter(r =>
+      (r.name || '').toLowerCase().includes(query.toLowerCase()) ||
+      ((r.location || '').toLowerCase().includes(query.toLowerCase()))
+    )
+  , [roomsData, query]);
+
+  const teams = useMemo(() =>
+    teamsData.filter(t => (t.name || '').toLowerCase().includes(query.toLowerCase()))
+  , [teamsData, query]);
 
   function openRoom(id) {
     setRoute({ name: 'room', id });
@@ -89,13 +73,18 @@ export default function App() {
   function openRooms() { setRoute({ name: 'rooms' }); }
   function openMap() { setRoute({ name: 'map' }); }
 
-  const currentRoom = useMemo(() => data.rooms.find(r => r.id === route.id), [data.rooms, route]);
-  const currentTeam = useMemo(() => data.teams.find(t => t.id === (currentRoom?.teamId || route.id)), [data.teams, currentRoom, route]);
+  const currentRoom = useMemo(() => roomsData.find(r => r.id === route.id), [roomsData, route]);
+  const currentTeam = useMemo(() => teamsData.find(t => t.id === (currentRoom?.teamId || route.id)), [teamsData, currentRoom, route]);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <div className="max-w-md mx-auto p-4">
-        <TopNav title={route.name === 'home' ? 'PI Planning' : route.name === 'map' ? 'Map' : route.name === 'rooms' ? 'Rooms' : route.name === 'teams' ? 'Teams' : (currentRoom?.name || 'Room')} onBack={() => setRoute({ name: 'home' })} showBack={route.name !== 'home'} onOpenMenu={() => setShowMenu(s => !s)} />
+        <TopNav
+          title={route.name === 'home' ? 'PI Planning' : route.name === 'map' ? 'Map' : route.name === 'rooms' ? 'Rooms' : route.name === 'teams' ? 'Teams' : (currentRoom?.name || 'Room')}
+          showBack={route.name !== 'home'}
+          onBack={() => setRoute({ name: 'home' })}
+          onOpenMenu={() => setShowMenu(v => !v)}
+        />
 
         <div className="mt-4">
           {route.name === 'home' && (
@@ -107,7 +96,7 @@ export default function App() {
               <SearchBar value={query} onChange={setQuery} placeholder="Search rooms or locations..." />
               <List>
                 {rooms.map(room => (
-                  <RoomCard key={room.id} room={room} team={data.teams.find(t => t.id === room.teamId)} onClick={() => openRoom(room.id)} />
+                  <RoomCard key={room.id} room={room} team={teamsData.find(t => t.id === room.teamId)} onClick={() => openRoom(room.id)} />
                 ))}
               </List>
             </div>
@@ -118,7 +107,7 @@ export default function App() {
               <SearchBar value={query} onChange={setQuery} placeholder="Search teams..." />
               <List>
                 {teams.map(team => (
-                  <TeamCard key={team.id} team={team} room={data.rooms.find(r => r.id === team.roomId)} onClick={() => openRoom(team.roomId)} />
+                  <TeamCard key={team.id} team={team} room={roomsData.find(r => r.id === team.roomId)} onClick={() => openRoom(team.roomId)} />
                 ))}
               </List>
             </div>
@@ -126,13 +115,13 @@ export default function App() {
 
           {route.name === 'room' && currentRoom && (
             <div>
-              <RoomDetail room={currentRoom} team={data.teams.find(t => t.id === currentRoom.teamId)} />
+              <RoomDetail room={currentRoom} team={teamsData.find(t => t.id === currentRoom.teamId)} />
             </div>
           )}
 
           {route.name === 'map' && (
             <div>
-              <MapView rooms={data.rooms} onPinClick={(id) => openRoom(id)} containerSize={size} />
+              <MapView rooms={roomsData} onPinClick={(id) => openRoom(id)} containerSize={size} />
             </div>
           )}
 
@@ -247,8 +236,9 @@ function RoomDetail({ room, team }) {
 }
 
 function MapView({ rooms, onPinClick, containerSize }) {
-  // Interactive SVG map scaled to container width
-  const width = Math.min(540, containerSize.width - 32);
+  // Defensive sizing to avoid NaN if containerSize is missing
+  const containerWidth = (containerSize && typeof containerSize.width === 'number') ? containerSize.width : 600;
+  const width = Math.min(540, Math.max(240, containerWidth - 32));
   const height = Math.round(width * 1.6);
 
   return (
@@ -265,10 +255,10 @@ function MapView({ rooms, onPinClick, containerSize }) {
           <rect x="10" y="104" width="38" height="46" fill="#fff" stroke="#e2e8f0" />
 
           {/* Pins */}
-          {rooms.map(room => (
+          {(rooms || []).map(room => (
             <g key={room.id} transform={`translate(${room.x}, ${room.y})`} style={{ cursor: 'pointer' }} onClick={() => onPinClick(room.id)}>
               <path d="M0,-4 C2,-4 4,-2 4,0 C4,3 0,8 0,8 C0,8 -4,3 -4,0 C-4,-2 -2,-4 0,-4 Z" fill="#1e40af" />
-              <text x="6" y="2" fontSize="5" fill="#fff" fontWeight="600">{room.name.split(' ').slice(-1)[0]}</text>
+              <text x="6" y="2" fontSize="5" fill="#fff" fontWeight="600">{(room.name || '').split(' ').slice(-1)[0]}</text>
             </g>
           ))}
         </svg>
@@ -276,26 +266,3 @@ function MapView({ rooms, onPinClick, containerSize }) {
     </div>
   );
 }
-
-/*
-To enable offline and PWA behaviour:
-- Add the manifest.json shown above to public/manifest.json
-- Add link in index.html: <link rel="manifest" href="/manifest.json">
-- Register a service worker (src/sw.js) and register it from index.js
-
-Example service worker (very small):
-self.addEventListener('install', event => {
-  event.waitUntil(caches.open('pi-planning-v1').then(cache => cache.addAll(['/','/index.html','/styles.css','/data.json'])));
-});
-self.addEventListener('fetch', event => {
-  event.respondWith(caches.match(event.request).then(resp => resp || fetch(event.request)));
-});
-
-Hosting: Deploy to Vercel, Netlify, or GitHub Pages. For QR code, generate one pointing to your hosted URL and print/put it by the doors.
-
-Optional next steps I can do for you (pick any):
-- Convert this to a full Vite project and give you a zip
-- Provide the manifest.json + service worker + index.html files
-- Replace sample data with a Firebase / Supabase integration and auth
-- Generate a QR code and short link for distribution
-*/
