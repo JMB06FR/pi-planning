@@ -4,7 +4,8 @@ PI Planning PWA — Single-file React App (App.jsx)
 Safe / defensive variant to avoid common runtime errors that cause a white screen.
 */
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from "react";
+import ReactDOM from "react-dom";
 
 // Sample data (replace with fetch('/data.json') for dynamic data)
 const SAMPLE_DATA = {
