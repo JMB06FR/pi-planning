@@ -40,7 +40,7 @@ function useWindowSize() {
 }
 
 export default function App() {
-  const [data, setData] = useState(SAMPLE_DATA);
+/*  const [data, setData] = useState(SAMPLE_DATA);
   const [route, setRoute] = useState({ name: 'home' }); // {name: 'rooms'} {name:'room', id: 'R1'} {name:'map'} {name:'teams'}
   const [query, setQuery] = useState('');
   const [showMenu, setShowMenu] = useState(false);
@@ -130,7 +130,7 @@ export default function App() {
           )}
 
         </div>
-
+*/
         <footer className="fixed bottom-6 left-0 right-0 max-w-md mx-auto px-4">
           <div className="bg-white rounded-2xl shadow-lg p-3 flex justify-between">
             <button className="flex-1 mr-2 p-3 bg-blue-600 text-white rounded-lg" onClick={openRooms}>Rooms</button>
@@ -139,8 +139,8 @@ export default function App() {
           </div>
         </footer>
 
-      </div>
-    </div>
+  //    </div>
+  //  </div>
   );
 }
 
