@@ -76,12 +76,8 @@ export default function App() {
   const currentRoom = useMemo(() => roomsData.find(r => r.id === route.id), [roomsData, route]);
   const currentTeam = useMemo(() => teamsData.find(t => t.id === (currentRoom?.teamId || route.id)), [teamsData, currentRoom, route]);
 
-  return (
-  
-    // const root = ReactDOM.createRoot(document.getElementById('root'));
-    // root.render(<h1>Hello, world!</h1>);
-  
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+  return ( 
+      <div className="min-h-screen bg-gray-50 text-gray-900">
       <div className="max-w-md mx-auto p-4">
         <TopNav
           title={route.name === 'home' ? 'PI Planning' : route.name === 'map' ? 'Map' : route.name === 'rooms' ? 'Rooms' : route.name === 'teams' ? 'Teams' : (currentRoom?.name || 'Room')}
