@@ -1,0 +1,22 @@
+{
+  "name": "pi-planning",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "https://JMB06FR.github.io/pi-planning/",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "gh-pages": "^5.0.0"
+  }
+}

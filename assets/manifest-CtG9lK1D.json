@@ -1,9 +1,0 @@
-{
-  "name": "PI Planning App",
-  "short_name": "PI Planning",
-  "start_url": ".",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0d6efd",
-  "icons": []
-}
