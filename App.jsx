@@ -279,15 +279,15 @@ function MapView({ rooms, onPinClick, containerSize }) {
 //}
 
 // Make sure your index.html contains: <div id="root"></div>
-const container = document.getElementById('root');
-if (!container) {
+//const container = document.getElementById('root');
+//if (!container) {
   // Defensive: fail loudly so you can see why nothing renders
-  throw new Error('No #root element found in HTML. Add <div id="root"></div> to your index.html.');
-}
+ // throw new Error('No #root element found in HTML. Add <div id="root"></div> to your index.html.');
+//}
 
-const root = createRoot(container);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-)
+//const root = createRoot(container);
+//root.render(
+//  <React.StrictMode>
+//    <App />
+//  </React.StrictMode>
+//)
