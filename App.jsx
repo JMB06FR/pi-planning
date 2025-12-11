@@ -271,7 +271,7 @@ function MapView({ rooms, onPinClick, containerSize }) {
 // Mount the app into the #root element (React 18)
 const rootElement = document.getElementById('root');
 if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(App /);
+  ReactDOM.createRoot(rootElement).render('App.jsx /');
 } else {
   console.error('No #root element found to mount the React app.');
 }
