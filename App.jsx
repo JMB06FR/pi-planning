@@ -271,9 +271,23 @@ function MapView({ rooms, onPinClick, containerSize }) {
 };
 
 // Mount the app into the #root element (React 18)
-const rootElement = document.getElementById('root');
-if (rootElement) {
-  ReactDOM.createRoot(rootElement).render('App.jsx /');
-} else {
-  console.error('No #root element found to mount the React app.');
+//const rootElement = document.getElementById('root');
+//if (rootElement) {
+//  ReactDOM.createRoot(rootElement).render('App.jsx /');
+//} else {
+//  console.error('No #root element found to mount the React app.');
+//}
+
+// Make sure your index.html contains: <div id="root"></div>
+const container = document.getElementById('root');
+if (!container) {
+  // Defensive: fail loudly so you can see why nothing renders
+  throw new Error('No #root element found in HTML. Add <div id="root"></div> to your index.html.');
 }
+
+const root = createRoot(container);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
