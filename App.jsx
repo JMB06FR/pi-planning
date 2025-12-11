@@ -6,6 +6,8 @@ Safe / defensive variant to avoid common runtime errors that cause a white scree
 
 import React, { useState, useMemo, useEffect } from "react";
 import ReactDOM from "react-dom";
+import { createRoot } from 'react-dom/client';
+
 
 // Sample data (replace with fetch('/data.json') for dynamic data)
 const SAMPLE_DATA = {
